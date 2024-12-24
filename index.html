@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            margin: 5px 0;
+        }
+
+        input {
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+        }
+
+        .timer {
+            margin-top: 20px;
+            font-size: 24px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Set Timer</h1>
+    <div>
+        <label for="duration">Set Süresi (saniye):</label>
+        <input type="number" id="duration" min="1" placeholder="Süreyi girin">
+        <br>
+        <label for="sets">Set Sayısı:</label>
+        <input type="number" id="sets" min="1" placeholder="Set sayısını girin">
+        <br>
+        <button onclick="startTimer()">Başlat</button>
+    </div>
+    <div class="timer" id="timer"></div>
+
+    <script>
+        function playSound() {
+            const msg = new SpeechSynthesisUtterance("Set bitti");
+            window.speechSynthesis.speak(msg);
+        }
+
+        function startTimer() {
+            const durationInput = document.getElementById('duration');
+            const setsInput = document.getElementById('sets');
+            const timerDisplay = document.getElementById('timer');
+
+            const duration = parseInt(durationInput.value);
+            const sets = parseInt(setsInput.value);
+
+            if (isNaN(duration) || isNaN(sets) || duration <= 0 || sets <= 0) {
+                alert('Lütfen geçerli bir süre ve set sayısı girin.');
+                return;
+            }
+
+            let currentSet = 1;
+
+            function runSet() {
+                if (currentSet > sets) {
+                    timerDisplay.textContent = 'Tüm setler tamamlandı!';
+                    playSound();
+                    return;
+                }
+
+                let remainingTime = duration;
+                timerDisplay.textContent = `Set ${currentSet}: ${remainingTime} saniye kaldı`;
+
+                const interval = setInterval(() => {
+                    remainingTime--;
+                    timerDisplay.textContent = `Set ${currentSet}: ${remainingTime} saniye kaldı`;
+
+                    if (remainingTime <= 0) {
+                        clearInterval(interval);
+                        playSound();
+                        currentSet++;
+                        if (currentSet <= sets) {
+                            setTimeout(() => {
+                                alert(`Set ${currentSet - 1} tamamlandı! Sonraki sete geçiliyor.`);
+                                runSet();
+                            }, 1000);
+                        } else {
+                            timerDisplay.textContent = 'Tüm setler tamamlandı!';
+                        }
+                    }
+                }, 1000);
+            }
+
+            runSet();
+        }
+    </script>
+</body>
+</html>
