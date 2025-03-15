@@ -1,120 +1,401 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Set Timer</title>
+    <title>Dairesel Set Zamanlayıcısı</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f4;
+            background-color: #f0f2f5;
         }
-
-        h1 {
+        
+        .timer-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            text-align: center;
+            width: 400px;
+        }
+        
+        .circle-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            margin: 30px auto;
+        }
+        
+        .circle-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+        }
+        
+        .circle-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#4c6fff 0% 0%, #f0f0f0 0% 100%);
+            transition: background 0.1s linear;
+        }
+        
+        .circle-center {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+        
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: bold;
             color: #333;
+            margin-bottom: 5px;
         }
-
-        label {
-            margin: 5px 0;
+        
+        .set-info {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 5px;
         }
-
-        input {
-            margin-bottom: 10px;
-            padding: 5px;
+        
+        .rest-indicator {
+            font-size: 0.9rem;
+            color: #ff4d4d;
+            font-weight: bold;
+            display: none;
         }
-
+        
+        .timer-controls {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+        
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .time-input {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .time-input div, .input-group div {
+            text-align: center;
+            width: 30%;
+        }
+        
+        .time-input input, .input-group input {
+            width: 80%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        
         button {
-            padding: 10px 20px;
-            background-color: #007BFF;
+            background-color: #4c6fff;
             color: white;
             border: none;
             border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 1rem;
             cursor: pointer;
+            transition: background-color 0.3s;
+            width: 30%;
         }
-
+        
+        button:hover {
+            background-color: #3a5ae8;
+        }
+        
         button:disabled {
             background-color: #cccccc;
+            cursor: not-allowed;
         }
-
-        .timer {
-            margin-top: 20px;
-            font-size: 24px;
-            color: #555;
+        
+        .rest-mode .circle-progress {
+            background: conic-gradient(#ff6b6b 0% 0%, #f0f0f0 0% 100%);
         }
     </style>
 </head>
 <body>
-    <h1>Set Timer</h1>
-    <div>
-        <label for="duration">Set Süresi (saniye):</label>
-        <input type="number" id="duration" min="1" placeholder="Süreyi girin">
-        <br>
-        <label for="sets">Set Sayısı:</label>
-        <input type="number" id="sets" min="1" placeholder="Set sayısını girin">
-        <br>
-        <button onclick="startTimer()">Başlat</button>
+    <div class="timer-container">
+        <h2>Dairesel Set Zamanlayıcısı</h2>
+        
+        <div class="input-group">
+            <div>
+                <label for="setCount">Set Sayısı</label>
+                <input type="number" id="setCount" min="1" max="20" value="3">
+            </div>
+            <div>
+                <label for="restMinutes">Dinlenme (dk)</label>
+                <input type="number" id="restMinutes" min="0" max="10" value="1">
+            </div>
+            <div>
+                <label for="restSeconds">Dinlenme (sn)</label>
+                <input type="number" id="restSeconds" min="0" max="59" value="0">
+            </div>
+        </div>
+        
+        <div class="time-input">
+            <div>
+                <label for="hours">Saat</label>
+                <input type="number" id="hours" min="0" max="23" value="0">
+            </div>
+            <div>
+                <label for="minutes">Dakika</label>
+                <input type="number" id="minutes" min="0" max="59" value="1">
+            </div>
+            <div>
+                <label for="seconds">Saniye</label>
+                <input type="number" id="seconds" min="0" max="59" value="0">
+            </div>
+        </div>
+        
+        <div class="circle-container">
+            <div class="circle-background"></div>
+            <div class="circle-progress" id="circleProgress"></div>
+            <div class="circle-center">
+                <div class="timer-display" id="timer">00:00:00</div>
+                <div class="set-info" id="setInfo">Set: 0/0</div>
+                <div class="rest-indicator" id="restIndicator">DİNLENME</div>
+            </div>
+        </div>
+        
+        <div class="timer-controls">
+            <button id="startBtn">Başlat</button>
+            <button id="pauseBtn" disabled>Duraklat</button>
+            <button id="resetBtn">Sıfırla</button>
+        </div>
     </div>
-    <div class="timer" id="timer"></div>
 
     <script>
-        function playSound() {
-            const msg = new SpeechSynthesisUtterance("Set bitti");
-            window.speechSynthesis.speak(msg);
-        }
-
-        function startTimer() {
-            const durationInput = document.getElementById('duration');
-            const setsInput = document.getElementById('sets');
+        document.addEventListener('DOMContentLoaded', function() {
+            const hoursInput = document.getElementById('hours');
+            const minutesInput = document.getElementById('minutes');
+            const secondsInput = document.getElementById('seconds');
+            const setCountInput = document.getElementById('setCount');
+            const restMinutesInput = document.getElementById('restMinutes');
+            const restSecondsInput = document.getElementById('restSeconds');
             const timerDisplay = document.getElementById('timer');
-
-            const duration = parseInt(durationInput.value);
-            const sets = parseInt(setsInput.value);
-
-            if (isNaN(duration) || isNaN(sets) || duration <= 0 || sets <= 0) {
-                alert('Lütfen geçerli bir süre ve set sayısı girin.');
-                return;
+            const setInfoDisplay = document.getElementById('setInfo');
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const restIndicator = document.getElementById('restIndicator');
+            const circleProgress = document.getElementById('circleProgress');
+            const timerContainer = document.querySelector('.timer-container');
+            
+            let timerInterval;
+            let totalSeconds = 0;
+            let remainingSeconds = 0;
+            let originalTime = 0;
+            let isRunning = false;
+            let currentSet = 0;
+            let totalSets = 0;
+            let restTime = 0;
+            let isResting = false;
+            
+            // Input değerlerini kontrol et
+            function validateInputs() {
+                hoursInput.value = Math.min(Math.max(0, parseInt(hoursInput.value) || 0), 23);
+                minutesInput.value = Math.min(Math.max(0, parseInt(minutesInput.value) || 0), 59);
+                secondsInput.value = Math.min(Math.max(0, parseInt(secondsInput.value) || 0), 59);
+                setCountInput.value = Math.min(Math.max(1, parseInt(setCountInput.value) || 1), 20);
+                restMinutesInput.value = Math.min(Math.max(0, parseInt(restMinutesInput.value) || 0), 10);
+                restSecondsInput.value = Math.min(Math.max(0, parseInt(restSecondsInput.value) || 0), 59);
             }
-
-            let currentSet = 1;
-
-            function runSet() {
-                if (currentSet > sets) {
-                    timerDisplay.textContent = 'Tüm setler tamamlandı!';
-                    playSound();
-                    return;
+            
+            hoursInput.addEventListener('change', validateInputs);
+            minutesInput.addEventListener('change', validateInputs);
+            secondsInput.addEventListener('change', validateInputs);
+            setCountInput.addEventListener('change', validateInputs);
+            restMinutesInput.addEventListener('change', validateInputs);
+            restSecondsInput.addEventListener('change', validateInputs);
+            
+            // Zamanlayıcıyı başlat
+            startBtn.addEventListener('click', function() {
+                if (!isRunning) {
+                    // Eğer yeni bir zamanlayıcı başlatılıyorsa
+                    if (currentSet === 0) {
+                        const hours = parseInt(hoursInput.value) || 0;
+                        const minutes = parseInt(minutesInput.value) || 0;
+                        const seconds = parseInt(secondsInput.value) || 0;
+                        totalSets = parseInt(setCountInput.value) || 1;
+                        
+                        const restMinutes = parseInt(restMinutesInput.value) || 0;
+                        const restSeconds = parseInt(restSecondsInput.value) || 0;
+                        restTime = restMinutes * 60 + restSeconds;
+                        
+                        totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                        
+                        if (totalSeconds === 0) {
+                            alert("Lütfen bir süre girin!");
+                            return;
+                        }
+                        
+                        currentSet = 1;
+                        setInfoDisplay.textContent = `Set: ${currentSet}/${totalSets}`;
+                        remainingSeconds = totalSeconds;
+                        originalTime = totalSeconds;
+                        isResting = false;
+                    }
+                    
+                    startTimer();
                 }
-
-                let remainingTime = duration;
-                timerDisplay.textContent = `Set ${currentSet}: ${remainingTime} saniye kaldı`;
-
-                const interval = setInterval(() => {
-                    remainingTime--;
-                    timerDisplay.textContent = `Set ${currentSet}: ${remainingTime} saniye kaldı`;
-
-                    if (remainingTime <= 0) {
-                        clearInterval(interval);
-                        playSound();
-                        currentSet++;
-                        if (currentSet <= sets) {
-                            setTimeout(() => {
-                                alert(`Set ${currentSet - 1} tamamlandı! Sonraki sete geçiliyor.`);
-                                runSet();
-                            }, 1000);
-                        } else {
-                            timerDisplay.textContent = 'Tüm setler tamamlandı!';
+            });
+            
+            // Zamanlayıcıyı duraklat
+            pauseBtn.addEventListener('click', function() {
+                clearInterval(timerInterval);
+                isRunning = false;
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+            });
+            
+            // Zamanlayıcıyı sıfırla
+            resetBtn.addEventListener('click', function() {
+                clearInterval(timerInterval);
+                isRunning = false;
+                remainingSeconds = 0;
+                currentSet = 0;
+                setInfoDisplay.textContent = `Set: 0/0`;
+                updateTimerDisplay(0);
+                updateCircleProgress(0);
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                hoursInput.disabled = false;
+                minutesInput.disabled = false;
+                secondsInput.disabled = false;
+                setCountInput.disabled = false;
+                restMinutesInput.disabled = false;
+                restSecondsInput.disabled = false;
+                isResting = false;
+                timerContainer.classList.remove('rest-mode');
+                restIndicator.style.display = 'none';
+            });
+            
+            // Zamanlayıcıyı başlat
+            function startTimer() {
+                hoursInput.disabled = true;
+                minutesInput.disabled = true;
+                secondsInput.disabled = true;
+                setCountInput.disabled = true;
+                restMinutesInput.disabled = true;
+                restSecondsInput.disabled = true;
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                isRunning = true;
+                
+                // Dinlenme moduna göre görünümü ayarla
+                if (isResting) {
+                    timerContainer.classList.add('rest-mode');
+                    restIndicator.style.display = 'block';
+                } else {
+                    timerContainer.classList.remove('rest-mode');
+                    restIndicator.style.display = 'none';
+                }
+                
+                updateTimerDisplay(remainingSeconds);
+                
+                timerInterval = setInterval(function() {
+                    remainingSeconds--;
+                    updateTimerDisplay(remainingSeconds);
+                    
+                    // İlerleme dairesini güncelle
+                    const progressPercentage = 100 - ((remainingSeconds / originalTime) * 100);
+                    updateCircleProgress(progressPercentage);
+                    
+                    if (remainingSeconds <= 0) {
+                        // Eğer dinlenme zamanı biterse
+                        if (isResting) {
+                            currentSet++;
+                            
+                            // Eğer tüm setler tamamlandıysa
+                            if (currentSet > totalSets) {
+                                timerComplete();
+                                return;
+                            }
+                            
+                            // Sonraki sete geç
+                            isResting = false;
+                            remainingSeconds = totalSeconds;
+                            originalTime = totalSeconds;
+                            setInfoDisplay.textContent = `Set: ${currentSet}/${totalSets}`;
+                            clearInterval(timerInterval);
+                            startTimer();
+                        } 
+                        // Eğer çalışma zamanı biterse ve başka set kaldıysa
+                        else if (currentSet < totalSets) {
+                            // Dinlenme zamanına geç
+                            isResting = true;
+                            remainingSeconds = restTime;
+                            originalTime = restTime;
+                            clearInterval(timerInterval);
+                            startTimer();
+                        } 
+                        // Son set bittiyse
+                        else {
+                            timerComplete();
                         }
                     }
                 }, 1000);
             }
-
-            runSet();
-        }
+            
+            // Zamanlayıcı görüntüsünü güncelle
+            function updateTimerDisplay(totalSeconds) {
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                
+                const displayHours = hours.toString().padStart(2, '0');
+                const displayMinutes = minutes.toString().padStart(2, '0');
+                const displaySeconds = seconds.toString().padStart(2, '0');
+                
+                timerDisplay.textContent = `${displayHours}:${displayMinutes}:${displaySeconds}`;
+            }
+            
+            // İlerleme dairesini güncelle
+            function updateCircleProgress(percent) {
+                const color = isResting ? '#ff6b6b' : '#4c6fff';
+                circleProgress.style.background = `conic-gradient(${color} 0% ${percent}%, #f0f0f0 ${percent}% 100%)`;
+            }
+            
+            // Zamanlayıcı tamamlandığında
+            function timerComplete() {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = "00:00:00";
+                alert("Tüm setler tamamlandı!");
+                resetBtn.click();
+            }
+        });
     </script>
 </body>
 </html>
